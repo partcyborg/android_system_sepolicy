@@ -147,6 +147,9 @@ allow domain fs_type:dir getattr;
 ### neverallow rules
 ###
 
+# Don't allow others to access memcg.
+neverallow { domain -init -lmkd userdebug_or_eng(`-domain') } memcg_device:dir_file_class_set *;
+
 # Do not allow any domain other than init or recovery to create unlabeled files.
 neverallow { domain -init -recovery } unlabeled:dir_file_class_set create;
 
@@ -267,7 +270,7 @@ neverallow { domain -init -ueventd } device:chr_file { open read write };
 # Limit what domains can mount filesystems or change their mount flags.
 # sdcard_type / vfat is exempt as a larger set of domains need
 # this capability, including device-specific domains.
-neverallow { domain -kernel -init -recovery -zygote -vold -update_engine -otapreopt_chroot -sudaemon} { fs_type -sdcard_type }:filesystem { mount remount relabelfrom relabelto };
+neverallow { domain -kernel -init -recovery -vold -zygote -update_engine -otapreopt_chroot -sudaemon } { fs_type -sdcard_type }:filesystem { mount remount relabelfrom relabelto };
 
 #
 # Assert that, to the extent possible, we're not loading executable content from
@@ -433,7 +436,7 @@ neverallow * { file_type fs_type dev_type }:{ lnk_file fifo_file sock_file } mou
 # Nobody should be able to execute su on user builds.
 # On userdebug/eng builds, only dumpstate, shell, and
 # su itself execute su.
-neverallow { domain userdebug_or_eng(`-dumpstate -shell -su -domain -system_app -system_server -platform_app') } su_exec:file no_x_file_perms;
+neverallow { domain userdebug_or_eng(`-dumpstate -shell -su -domain') } su_exec:file no_x_file_perms;
 
 # Do not allow the introduction of new execmod rules. Text relocations
 # and modification of executable pages are unsafe.
@@ -515,7 +518,7 @@ neverallow {
 
 # Only domains spawned from zygote and runas may have the appdomain attribute.
 neverallow { domain -runas -zygote } {
-  appdomain -shell userdebug_or_eng(`-su -sudaemon') -bluetooth -sudaemon userdebug_or_eng(`-qti-testscripts')
+  appdomain -shell userdebug_or_eng(`-su') -bluetooth -sudaemon userdebug_or_eng(`-qti-testscripts')
 }:process { transition dyntransition };
 
 # Minimize read access to shell- or app-writable symlinks.
