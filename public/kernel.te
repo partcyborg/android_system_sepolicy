@@ -81,6 +81,10 @@ allow kernel media_rw_data_file:file create_file_perms;
 # Access to /data/misc/vold/virtual_disk.
 allow kernel vold_data_file:file read;
 
+# Let processes commit suicide if they want to
+allow kernel self:capability kill;
+
+
 ###
 ### neverallow rules
 ###
